@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package signalforhelp;
+
+message FrameRequest {
+  bytes frame = 1;  // imagen en crudo
+}
+
+message Detection {
+  int32 class_id = 1;
+  float confidence = 2;
+  repeated float bbox = 3; // [x1, y1, x2, y2]
+}
+
+message FrameResponse {
+  repeated Detection detections = 1;
+}
