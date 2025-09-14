@@ -1,2 +1,6 @@
-ultralytics
+fastapi
+uvicorn[standard]
+protobuf
+pytest
 opencv-python
+ultralytics
