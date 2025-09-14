@@ -14,4 +14,5 @@ message Detection {
 
 message FrameResponse {
   repeated Detection detections = 1;
+  string image_base64 = 2;  // imagen procesada
 }
