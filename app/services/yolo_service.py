@@ -1,30 +1,17 @@
 import cv2
 import numpy as np
 import base64
-import torch
 from ultralytics import YOLO
 
-# Detectar si hay GPU disponible
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-# Cargar modelo una sola vez, fijando device y precision
+# cargar modelo entrenado al inicio
 model = YOLO("models/best.pt")
-model.fuse()  # 🔹 fusiona capas Conv + BN (más rápido en inferencia)
-if DEVICE == "cuda":
-    model.to("cuda")
-    model.model.half()  # 🔹 half precision (fp16) en GPU
-else:
-    model.to("cpu")
 
 def process_image(image_bytes: bytes):
     # convertir a numpy
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # 🔹 reducir resolución para velocidad
-    img = cv2.resize(img, (640, 640))
-
-    # ejecutar predicción (ya no pasamos device aquí 👇)
+    # ejecutar predicción
     results = model(img)
 
     detections = []
@@ -36,7 +23,7 @@ def process_image(image_bytes: bytes):
                 "bbox": box.xyxy[0].tolist()
             })
 
-    # 🔹 usar el frame anotado
+    # 🔹 usar el frame anotado que YOLO genera automáticamente
     annotated = results[0].plot()
 
     # 🔹 convertir el frame anotado a base64
