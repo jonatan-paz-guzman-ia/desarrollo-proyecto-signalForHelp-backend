@@ -16,6 +16,17 @@ app.add_middleware(
 # Incluir rutas
 app.include_router(routes.router, prefix="/api")
 
+
 @app.get("/health")
 def health():
+    """
+    Verifica el estado de salud del servicio backend.
+
+    Returns
+    -------
+    dict
+        Un diccionario con el estado de la aplicación:
+        - status : str
+            Valor `"ok"` si el backend está en funcionamiento.
+    """
     return {"status": "ok"}
