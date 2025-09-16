@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.116.1",
     "grpcio>=1.74.0",
     "grpcio-tools>=1.74.0",
+    "httpx>=0.28.1",
     "numpy>=2.3.3",
     "opencv-python>=4.11.0.86",
     "pytest>=8.4.2",
