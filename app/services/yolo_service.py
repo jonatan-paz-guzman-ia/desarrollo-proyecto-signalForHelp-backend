@@ -1,10 +1,14 @@
 import cv2
 import numpy as np
 import base64
+import os
 from ultralytics import YOLO
 
-# cargar modelo entrenado al inicio
-model = YOLO("models/best.pt")
+# Leer ruta desde variable de entorno o usar default
+MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
+
+# Cargar modelo al inicio
+model = YOLO(MODEL_PATH)
 
 def process_image(image_bytes: bytes):
     """

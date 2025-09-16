@@ -15,15 +15,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Crear directorio de la app
 WORKDIR /app
 
-# Copiar los archivos de requirements y pyproject si existiera
+# Copiar dependencias
 COPY requirements.txt ./
 
-# Instalar dependencias en cache de pip
+# Instalar dependencias
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir grpcio grpcio-tools
 
-# ===== Etapa 2: Copiar el código y generar proto =====
+# ===== Etapa 2: Imagen final =====
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -35,6 +35,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copiar código fuente
 COPY . .
 
+# Definir variable de entorno para la ruta del modelo
+# Por defecto apunta a la carpeta interna del contenedor
+ENV MODEL_PATH=/app/models/best.pt
+
 # Generar archivos Python a partir de Proto
 RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. signalforhelp.proto
 
@@ -42,4 +46,4 @@ RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. signalfor
 EXPOSE 8000
 
 # Comando por defecto para levantar la app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
