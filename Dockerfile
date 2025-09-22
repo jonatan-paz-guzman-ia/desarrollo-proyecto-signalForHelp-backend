@@ -1,49 +1,49 @@
 # ===== Etapa 1: Construcción de dependencias =====
 FROM python:3.11-slim as builder
 
-# Evitar mensajes interactivos
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar herramientas del sistema necesarias
+# Instalar herramientas necesarias para compilar dependencias
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio de la app
 WORKDIR /app
 
 # Copiar dependencias
 COPY requirements.txt ./
 
-# Instalar dependencias
+# Instalar dependencias en builder
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir grpcio grpcio-tools
 
 # ===== Etapa 2: Imagen final =====
 FROM python:3.11-slim
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 🔑 Librerías necesarias para OpenCV en runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copiar dependencias del builder
+# Copiar dependencias instaladas desde builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copiar código fuente
+# Copiar el código fuente
 COPY . .
 
-# Definir variable de entorno para la ruta del modelo
-# Por defecto apunta a la carpeta interna del contenedor
+# Variable de entorno para el modelo
 ENV MODEL_PATH=/app/models/best.pt
 
-# Generar archivos Python a partir de Proto
-RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. signalforhelp.proto
 
-# Exponer puerto FastAPI
+# Puerto expuesto para FastAPI
 EXPOSE 8000
 
-# Comando por defecto para levantar la app
+# Comando de inicio
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
